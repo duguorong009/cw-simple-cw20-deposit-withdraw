@@ -2,13 +2,13 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_binary, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
-    WasmMsg,
+    WasmMsg, from_binary,
 };
 use cw2::set_contract_version;
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, WithdrawMsg};
+use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, WithdrawMsg, DepositMsg};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:trade-cw20";
@@ -74,17 +74,33 @@ fn deposit_cw20(
     info: MessageInfo,
     cw20_msg: Cw20ReceiveMsg,
 ) -> Result<Response, ContractError> {
-    // Validate if the message comes from "cw20" token
+    let token_contract = info.sender;
+    let sent_amount = cw20_msg.amount;
+
+    let depositor = cw20_msg.sender;
 
     // Deseralize the message for the params
+    match from_binary(&cw20_msg.msg)? {
+        DepositMsg { cw20_address, amount } => {
+            // Validations
+            if sent_amount != amount {
+                return Err(ContractError::Std(StdError::GenericErr { msg: "Invalid amount".to_string() }));
+            }
+            if token_contract != deps.api.addr_validate(cw20_address.as_str())? {
+                return Err(ContractError::Std(StdError::GenericErr { msg: "Invalid amount".to_string() }));
+            }
 
-    // Handle the real "deposit".
+            // Handle the real "deposit".
 
-    Ok(Response::default())
+            Ok(Response::default())
+        },
+        _ => return Err(ContractError::Unauthorized {  }),
+    }
+    
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
+pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         // TODO
     }
