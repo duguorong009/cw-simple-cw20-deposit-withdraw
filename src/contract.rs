@@ -1,25 +1,20 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
-    WasmMsg, from_binary,
+    from_binary, to_binary, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Response, StdError,
+    StdResult, WasmMsg,
 };
-use cw2::set_contract_version;
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, WithdrawMsg, DepositMsg};
-
-// version info for migration info
-const CONTRACT_NAME: &str = "crates.io:trade-cw20";
-const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+use crate::msg::{DepositMsg, ExecuteMsg, InstantiateMsg, QueryMsg, WithdrawMsg};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
-    deps: DepsMut,
+    _deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
-    msg: InstantiateMsg,
+    _info: MessageInfo,
+    _msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     Ok(Response::new().add_attribute("method", "instantiate"))
 }
@@ -77,26 +72,30 @@ fn deposit_cw20(
     let token_contract = info.sender;
     let sent_amount = cw20_msg.amount;
 
-    let depositor = cw20_msg.sender;
-
     // Deseralize the message for the params
     match from_binary(&cw20_msg.msg)? {
-        DepositMsg { cw20_address, amount } => {
+        DepositMsg {
+            cw20_address,
+            amount,
+        } => {
             // Validations
             if sent_amount != amount {
-                return Err(ContractError::Std(StdError::GenericErr { msg: "Invalid amount".to_string() }));
+                return Err(ContractError::Std(StdError::GenericErr {
+                    msg: "Invalid amount".to_string(),
+                }));
             }
             if token_contract != deps.api.addr_validate(cw20_address.as_str())? {
-                return Err(ContractError::Std(StdError::GenericErr { msg: "Invalid amount".to_string() }));
+                return Err(ContractError::Std(StdError::GenericErr {
+                    msg: "Invalid amount".to_string(),
+                }));
             }
 
             // Handle the real "deposit".
 
             Ok(Response::default())
-        },
-        _ => return Err(ContractError::Unauthorized {  }),
+        }
+        _ => Err(ContractError::Unauthorized {}),
     }
-    
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
