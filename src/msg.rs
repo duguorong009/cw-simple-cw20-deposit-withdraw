@@ -28,6 +28,12 @@ pub struct WithdrawMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+pub enum Cw20HookMsg {
+    Deposit(DepositMsg),
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct DepositMsg {
     pub cw20_address: String,
     pub amount: Uint128,

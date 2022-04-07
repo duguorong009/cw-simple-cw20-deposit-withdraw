@@ -7,7 +7,7 @@ use cosmwasm_std::{
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
 
 use crate::error::ContractError;
-use crate::msg::{DepositMsg, ExecuteMsg, InstantiateMsg, QueryMsg, WithdrawMsg};
+use crate::msg::{Cw20HookMsg, DepositMsg, ExecuteMsg, InstantiateMsg, QueryMsg, WithdrawMsg};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -73,11 +73,12 @@ fn deposit_cw20(
     let sent_amount = cw20_msg.amount;
 
     // Deseralize the message for the params
-    match from_binary(&cw20_msg.msg)? {
-        DepositMsg {
-            cw20_address,
-            amount,
-        } => {
+    match from_binary(&cw20_msg.msg) {
+        Ok(Cw20HookMsg::Deposit(msg)) => {
+            let DepositMsg {
+                cw20_address,
+                amount,
+            } = msg;
             // Validations
             if sent_amount != amount {
                 return Err(ContractError::Std(StdError::GenericErr {
@@ -94,7 +95,7 @@ fn deposit_cw20(
 
             Ok(Response::default())
         }
-        _ => Err(ContractError::Unauthorized {}),
+        Err(_) => Err(ContractError::Unauthorized {}),
     }
 }
 
