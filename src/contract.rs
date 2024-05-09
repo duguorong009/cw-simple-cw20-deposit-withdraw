@@ -105,10 +105,3 @@ pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         // TODO
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{coins, from_binary};
-}
