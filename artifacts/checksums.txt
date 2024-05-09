@@ -1,0 +1,1 @@
+bc9d72bfd9365dc6a42162bdb0e26e394cca6282c5a2f5c736b2635d760e4b7e  trade_cw20.wasm
